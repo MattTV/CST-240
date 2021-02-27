@@ -1,0 +1,57 @@
+#!/usr/bin/bash
+
+# Matt Volpe
+# Homework 1
+# February 26, 2021
+
+# Unless stated otherwise
+#  - the searches must be case insensitive
+#  - All .txt and .csv files must be searched
+#
+# Each problem describes what you are searching for, it is your task to
+# write a grep command that will find them.
+#
+# The correct number of found items is listed to help you know if you have
+# the right answer.  You can use a pipe and the wc command to count the
+# number of lines returned by grep.
+
+# SAMPLE
+# Use the grep command to find the word 'TIME' in any .txt or .csv file in
+# the current directory. Case does not matter.
+#
+# -E uses extended syntax (not needed here)
+# -i case-insensitive search
+# -w whole word only ('sometimes' won't match)
+grep -Eiw TIME *.txt *.csv
+
+
+# PROBLEM 1 (59 found)
+# Find all years from 1900-1999
+grep -iw 19[0-9][0-9] *.txt *.csv
+
+# PROBLEM 2 (103 found)
+# Find all years from 1900-2099
+grep -Eiw "19[0-9][0-9]|20[0-9][0-9]" *.txt *.csv
+
+# PROBLEM 3 (70 found)
+# With out using the w option, find all instances of the word old
+grep -i [[:space:][:punct:]]old[[:space:][:punct:]] *.txt *.csv
+
+# PROBLEM 4 (17 found)
+# Anything that looks like a letter grade inside of double quotes
+# Uppercase letters only and may or may not have a + op - following it
+grep -E \"[A-DF][-+]?\" *.txt *.csv # I only found 16, I'm not sure if there is a number 17. There was a match in the binary file that gave me a false positive at first.
+
+# PROBLEM 5 (16 found)
+# All words that begin with a vowel and end with 'it' in wordlist.txt
+grep -i ^[aeiou][[:alpha:]]*it$ wordlist.txt
+
+# PROBLEM 6 (6 found)
+# All in wordlist.txt words that do not begin with a vowel but end with
+# 'es' and are at least 7 characters in length
+grep -Ei '^[bcdfghjklmnpqrstvwxyz][[:alpha:]]{4,}es$' wordlist.txt
+
+# PROBLEM 7 (30 found)
+# Find all dollar amounts with optional cents
+# ($ followed by digits with one possible .)
+grep -E '\$[0-9]*\.?[0-9]{0,2}' *.txt *.csv

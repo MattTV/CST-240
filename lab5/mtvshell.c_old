@@ -1,0 +1,34 @@
+#include <stdio.h>
+
+const short SIZE = 100;
+const short ASIZE = 20;
+
+int main()
+{
+
+    char in[SIZE];
+    char ** args;
+
+    fgets(in, SIZE, stdin);
+
+    short numargs = 1;
+    short ii = 0;
+    while(in[ii] != '\0')
+    {
+        if (in[ii] = ' ')
+            ++numargs;
+
+        ++ii;
+    }
+
+    args = (char *)malloc(sizeof(char *) * numargs);
+
+    for (int ii = 0; ii < numargs; ++ii)
+    {
+        short jj = 0;
+    }
+
+
+    return 0;
+
+}
