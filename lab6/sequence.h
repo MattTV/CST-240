@@ -10,5 +10,5 @@
 #include <stdint.h>
 
 // returns the next number in a sequence
-int64_t Next_In_Sequence();
+int Next_In_Sequence();
 

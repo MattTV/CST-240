@@ -5,7 +5,7 @@
 # Email:  phil.howard@oit.edu
 # Date:   Feb. 20, 2016
 #
-COPTS = -g -O0 -Wall -pthread
+COPTS = -g -O0 -Wall -lpthread
 
 OBJS = list.o \
        sequence.o \

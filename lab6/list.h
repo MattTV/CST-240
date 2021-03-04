@@ -63,7 +63,7 @@ int Remove_From_End(linked_list_t list, int* data);
 // Params:
 //    list: list to traverse
 //    action: function to call with each data item
-int Traverse(linked_list_t list, void (*action)(int64_t data));
+int Traverse(linked_list_t list, void (*action)(int data));
 
 // Insert an item in sorted order of the list
 // List must be sorted when this is called

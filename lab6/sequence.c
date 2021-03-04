@@ -12,7 +12,7 @@
 #include "sequence.h"
 
 // static variable to remember the last sequence number
-static int64_t g_sequence = 0;
+static int g_sequence = 0;
 
 //*************************************
 // Generate the next sequence number
@@ -21,9 +21,9 @@ static int64_t g_sequence = 0;
 //       This code was specifically crafted to test your 
 //       threading implementation
 //
-static int64_t get_next()
+static int get_next()
 {
-    int64_t current;
+    int current;
 
     current = g_sequence;
 
@@ -36,9 +36,9 @@ static int64_t get_next()
 }
 
 // returns the next number in a sequence
-int64_t Next_In_Sequence()
+int Next_In_Sequence()
 {
-    int64_t next;
+    int next;
 
     next = get_next();
 
