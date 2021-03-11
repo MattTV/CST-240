@@ -7,7 +7,9 @@
 //
 // Author: Philip Howard
 // Date:   2015/12/30
-//
+//*************************************************
+
+void Fatal_Error(const char * msg);
 
 // Opaque type for lists
 typedef void *linked_list_t;
