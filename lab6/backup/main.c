@@ -30,12 +30,6 @@
 //
 //*************************************************
 
-typedef struct tinfo_s
-{
-    linked_list_t * l;
-    int v;
-} tinfo_t;
-
 pthread_mutex_t lock;
 
 //*************************************************
@@ -55,19 +49,16 @@ void Check_Item(int value)
 //*************************************************
 void * thread(void * data)
 {
-    tinfo_t * s = (tinfo_t *)data;
-    linked_list_t * list = s->l;
-    int val = s->v;
+    int val = *(int *)data;
 
     printf("Thread ID: %ld, Value: %d\n", pthread_self(), val);
 
-    int d = 0;
-    for (short ii = 0; ii < val; ii++)
+    for (short ii = 0; ii < val; ++ii)
     {
-        pthread_mutex_lock(&lock);
-        d = Next_In_Sequence();
-        pthread_mutex_unlock(&lock);
-        Insert_In_Order(list, d);
+        //pthread_mutex_lock(&lock);
+        //int n = Next_In_Sequence();
+        //pthread_mutex_unlock(&lock);
+        printf("Next in sequence: %d\n", n);
     }
 
     return NULL;
@@ -104,15 +95,9 @@ int main(int argc, char** argv)
 
     pthread_mutex_init(&lock, NULL);
 
-    list = Init_List();
-
-    tinfo_t info;
-    info.l = list;
-    info.v = num_to_insert;
-
     for (short ii = 0; ii < num_threads; ++ii)
     {
-        pthread_create(threads + ii, NULL, thread, &info);
+        pthread_create(threads + ii, NULL, thread, &num_to_insert);
     }
 
     for (short ii = 0; ii < num_threads; ++ii)
@@ -123,6 +108,13 @@ int main(int argc, char** argv)
     printf("Next expected: %i\n", num_to_insert * num_threads + 1);
 
     printf("Creating sorted list with %d elements\n", num_to_insert);
+    list = Init_List();
+
+    /*for (ii=0; ii<num_to_insert; ii++)
+    {
+        data = Next_In_Sequence();
+        Insert_In_Order(list, data);
+    }*/
 
     printf("Checking sorted list\n");
     Traverse(list, Check_Item);
@@ -134,5 +126,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
 
