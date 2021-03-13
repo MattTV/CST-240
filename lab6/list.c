@@ -386,6 +386,7 @@ int Insert_In_Order(linked_list_t list, int value)
             else if (!c)
                 l -> tail = n;
         }
+        ++(l -> count);
         pthread_mutex_unlock(&l->lock);
     }
 

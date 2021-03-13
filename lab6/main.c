@@ -16,18 +16,26 @@
 // sys     0m0.071s
 //
 // ./threads -t 3 -n 10000
-//real    0m0.165s
-//user    0m0.074s
-//sys     0m0.202s
+// real    0m0.165s
+// user    0m0.074s
+// sys     0m0.202s
 //
-//I tested with about the highest number I could using int instead of int64. I notice that much more kernel
+// I tested with about the highest number I could using int instead of int64. I notice that much more kernel
 //  time is needed when using threads. I don't think that multithreading helps in this case because each
 //  thread relies on the same one resource.
 //*************************************************
 // Timing of Step 2b.
 //*************************************************
-//
+// ./threads -t 1 -n 30000
+// real    0m2.362s
+// user    0m1.657s
+// sys     0m0.085s
+// ./threads -t 3 -n 10000
+// real    0m2.370s
+// user    0m1.802s
+// sys     0m0.196s
 //*************************************************
+// In this instance, multithreading used more time, but by a much smaller percentage of the total than before. Using only one thread still had to do some work without the locks, but overall it seems that at this workload perhaps the system can pay off.
 
 typedef struct tinfo_s
 {
@@ -128,7 +136,9 @@ int main(int argc, char** argv)
     printf("Checking sorted list\n");
     Traverse(list, Check_Item);
 
-    if (Count(list) != num_to_insert) printf("List is not tracking size\n");
+    // Was previously != num_to_insert, but this works with 1 thread and not multiple, so I changed it. Sorry if I shouldn't.
+    if (Count(list) != num_to_insert * num_threads)
+        printf("List is not tracking size\n");
 
     Delete_List(list);
     pthread_mutex_destroy(&lock);
