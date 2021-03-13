@@ -1,300 +1,393 @@
 //**************************************************
 // Linked list implementation
-//
+// Matt Volpe
+// CST 240 Linux Programming
+// January 28, 2021
 
 #include <stdlib.h>
 #include <stdio.h>
-//#ifdef __unix__
-//#elif defined(_WIN32) || defined(WIN32)
-//#endif
 
 #include "list.h"
 
-typedef struct item_s
+// A node structure
+typedef struct node_s
 {
     int data;
-    struct item_s *next;
-    struct item_s *prev;
-} item_t;
+    struct node_s * next;
+    struct node_s * prev;
+} node_t;
 
+// A containing list structure
 typedef struct list_s
 {
-    item_t* head;
-    item_t* tail;
-    int     count;
-    pthreat_mutex_t lock;
+    node_t * head;
+    node_t * tail;
+    int count;
+    pthread_mutex_t lock;
 } list_t;
 
-void Fatal_Error(const char* msg) {
+void Fatal_Error(const char * msg)
+{
     perror(msg);
     exit(1);
+}
+
+// Create and initialize a node.
+// Return pointer to node. Return NULL on failure.
+node_t * Init_Node(int data, node_t * next, node_t * prev)
+{
+    // Dynamically allocate a node
+    node_t * n = malloc(sizeof(node_t));
+
+    // If successful, assign what is given
+    if (n)
+    {
+        n -> data = data;
+        n -> next = next;
+        n -> prev = prev;
+    }
+
+    return n;
 }
 
 // Create and initialize a list. 
 // Return pointer to list. Return NULL on failure.
 linked_list_t Init_List()
 {
-    list_t* pList = (list_t*)malloc(sizeof(list_t));
-    if(pList==NULL) {
-        Fatal_Error("Cannot allocate memory for list");
+    // Dynamically allocate a list
+    list_t * l = (list_t *)malloc(sizeof(list_t));
+
+    // If successful, assign default values
+    if (l)
+    {
+        l->head = NULL;
+        l->tail = NULL;
+        l->count = 0;
+        pthread_mutex_init(&l->lock, NULL);
     }
-    pList->count = 0;
-    pList->head = NULL;
-    pList->tail = NULL;
-    pthread_mutex_init(&(pList->lock));
-    return (linked_list_t)pList;
+
+    return (linked_list_t *)l;
 }
 
-// Delete a list are free all memory used by the list
+// Delete a list and free all memory used by the list
 // It is erroneous to use the list pointer after caling this routine.
 // Return zero on success
+// Return one if list is NULL
 int Delete_List(linked_list_t list)
 {
-    list_t* pList = (list_t*)list;
-    item_t* pItem = pList==NULL ? NULL : pList->head;
-    while(pItem!=NULL) {
-        item_t *p = pItem->next;
-        free(pItem);
-        pItem = p;
+    short ret = 1;
+
+    if (list)
+    {
+        ret = 0;
+
+        list_t * l = (list_t *)list;
+        pthread_mutex_lock(&l->lock);
+        
+        node_t * curr = l -> head;
+        node_t * prev = NULL; 
+
+        while (curr != NULL)
+        {
+            prev = curr;
+            curr = curr -> next;
+            free(prev);
+        }
+
+        pthread_mutex_unlock(&l->lock);
+        pthread_mutex_destroy(&l->lock);
+
+        free(list);
     }
-	free(pList);
-    return 0;
+
+    return ret;
 }
 
 // Returns the number of items in the list
+// Returns -1 if list is NULL
 int Count(linked_list_t list)
 {
-    list_t* pList = (list_t*)list;
-    return pList==NULL ? 0 : pList->count;
+    short ret = -1;
+
+    if (list)
+        ret = ((list_t *)list) -> count;
+
+    return ret; 
 }
 
 // Insert an item at the beginning of the list
 // Return zero on success
+// Return one if list is NULL
+// Return two if malloc failed
 // Params:
 //    list: list to add item to
 //    data: Data to be added to the list
 int Insert_At_Beginning(linked_list_t list, int data)
 {
-    int err = 0;
-    if(list==NULL)
+    short ret = 1;
+    
+    if (list)
     {
-        err = 1;
-    }
-    else
-    {
-    	list_t* pList = (list_t*)list;
-        // Setup the item
-        item_t *pItem = (item_t*)malloc(sizeof(item_t));
-        pItem->data = data;
-        pItem->prev = NULL;
-        pItem->next = pList->head;
+        ret = 2;
 
-        // Handle the tail case
-        if(pList->tail) // There is a tail
+        list_t * l = (list_t *)list; 
+        pthread_mutex_lock(&l->lock);
+        node_t * n = Init_Node(data, l -> head, NULL);
+        
+        if (n)
         {
-            pItem->next = pList->head;
-            pList->head->prev = pItem;
-            pList->head = pItem;
+            ret = 0;
+
+            l -> head = n;
+            ++(l -> count);
+
+            if (l -> count == 1)
+                l -> tail = n;
+            else
+                l -> head -> next -> prev = n;
         }
-        else // There is no tail, yet
-        {
-            pList->head = pItem;
-            pList->tail = pItem;
-        }
-        ++pList->count;
+        pthread_mutex_unlock(&l->lock);
     }
-    return err;
+
+    return ret;
 }
 
 // Insert an item at the end of the list
 // Return zero on success
+// Return one if list is NULL
+// Return two if a malloc fails
 // Params:
 //    list: list to add item to
 //    data: Data to be added to the list
 int Insert_At_End(linked_list_t list, int data)
 {
-    int err = 0;
-    if(list==NULL)
-    {
-        err = 1;
-    }
-    else
-    {
-    	list_t* pList = (list_t*)list;
-        // Setup the item
-        item_t *pItem = (item_t*)malloc(sizeof(item_t));
-        pItem->data = data;
-        pItem->next = NULL;
-        pItem->prev = pList->tail;
+    short ret = 1;
 
-        // Handle the tail case
-        if(pList->count) // There is at least one item
+    if (list)
+    {
+        ret = 2;
+
+        list_t * l = (list_t *)list;
+        pthread_mutex_lock(&l->lock);
+        node_t * n = Init_Node(data, NULL, l -> tail);
+        
+        if (n)
         {
-            pList->tail->next = pItem;
-            pList->tail = pItem;
+            ret = 0;
+
+            l -> tail = n;
+            ++(l -> count);
+
+            if (l -> count == 1)
+                l -> head = n;
+            else
+                l -> tail -> prev -> next = n;
         }
-        else // There is no tail, yet
-        {
-            pList->head = pItem;
-            pList->tail = pItem;
-        }
-        ++pList->count;
+        pthread_mutex_unlock(&l->lock);
     }
-    return err;
+
+    return ret;
 }
 
 // Return true (non-zero) if the list is empty
+// Return -1 if the list is NULL
 //    list: list to examine
 int Empty(linked_list_t list)
 {
-    list_t* pList = (list_t*)list;
-    return pList->count==0;
+    short ret = -1;
+
+    if (list)
+    {
+        list_t * l = (list_t *)list;
+
+        ret = l -> count;
+    }
+
+    return ret;
 }
 
 // Remove an item from the beginning of the list 
 // Return zero on success
+// Return one if the list is NULL
+// Return two if list is empty
+// Return three if data is NULL
 // Params:
 //    list: list to remove item from
 //    data: pointer to location to store data of removed item
 //          if data is NULL, data is not returned
 int Remove_From_Beginning(linked_list_t list, int* data)
 {
-    int err = 0;
-   	list_t* pList = (list_t*)list;
-    if(pList==NULL || pList->count==0)
+    short ret = 1;
+
+    if (list)
     {
-        err = 1;
-    }
-    else
-    {
-        item_t* pItem = pList->head;
-        *data = pItem->data;
-        --pList->count;
-        if(pList->count==0)
+        ret = 2;
+
+        list_t * l = (list_t *)list;
+
+        pthread_mutex_lock(&l->lock);
+        if (l -> head != NULL)
         {
-            pList->head = NULL;
-            pList->tail = NULL;
-        }
-        else
-        {
-            pList->head = pItem->next;
-            if(pItem->next)
+            ret = 3;
+
+            if (data)
             {
-                pItem->next->prev = NULL;
+                ret = 0;
+                
+                *data = l -> head -> data;
             }
+
+            if (l -> head -> next != NULL)
+                l -> head -> next -> prev = NULL;
+            
+            node_t * h = l -> head -> next;
+
+            free(l -> head);
+
+            l -> head = h;
         }
-        free(pItem);
+        pthread_mutex_unlock(&l->lock);
     }
 
-    return err;
+    return ret;
 }
 
 // Remove an item from the end of the list 
 // Return zero on success
+// Return one if list is NULL
+// Return two if the list is empty
+// Return three if data is NULL
 // Params:
 //    list: list to remove item from
 //    data: pointer to location to store data of removed item
 //          if data is NULL, data is not returned
 int Remove_From_End(linked_list_t list, int* data)
 {
-    int err = 0;
-   	list_t* pList = (list_t*)list;
-    if(pList==NULL || pList->count==0)
+    short ret = 1;
+
+    if (list)
     {
-        err = 1;
-    }
-    else
-    {
-        item_t* pItem = pList->tail;
-        *data = pItem->data;
-        --pList->count;
-        if(pList->count==0)
+        ret = 2;
+
+        list_t * l = (list_t *)list;
+
+        pthread_mutex_lock(&l->lock);
+        if (l -> tail != NULL)
         {
-            pList->head = NULL;
-            pList->tail = NULL;
+            ret = 3;
+
+            if (data)
+            {
+                ret = 0;
+
+                *data = l -> tail -> data;
+            }
+
+            if (l -> tail -> prev != NULL)
+                l -> tail -> prev -> next = NULL;
+
+            node_t * t = l -> tail -> prev;
+
+            free(l -> tail);
+
+            l -> tail = t;
+        }
+        pthread_mutex_unlock(&l->lock);
+    }
+
+    return ret;
+}
+
+// Execute a function on the data of each node in the list
+// Return zero on success
+// Return one if list is NULL
+// Return two if the list is empty
+// Return three if the function pointer is NULL
+// Params:
+//    list: list to traverse
+//    void (*action)(int data): the function to execute
+int Traverse(linked_list_t list, void (*action)(int data))
+{
+    short ret = 1;
+
+    if (list)
+    {
+        ret = 2;
+
+        list_t * l = (list_t *)list;
+        
+        pthread_mutex_lock(&l->lock);
+        if (l -> head)
+        {
+            ret = 3;
+
+            if (action)
+            {
+                ret = 0;
+
+                node_t * n = l -> head;
+
+                while (n)
+                {
+                    action(n -> data);
+
+                    n = n -> next;
+                }
+            }
+        }
+        pthread_mutex_unlock(&l->lock);
+    }
+    return ret;
+}
+
+// Insert a value in order into an ordered list
+// Return zero on success
+// Return one if list is NULL
+// Params:
+//    list: list to insert into
+//    value: value to create a node for and place ordered in the list
+int Insert_In_Order(linked_list_t list, int value)
+{
+    short ret = 1;
+
+    if (list)
+    {
+        ret = 0;
+
+        list_t * l = (list_t *)list;
+        pthread_mutex_lock(&l->lock);
+        node_t * n = Init_Node(value, NULL, NULL);
+
+        if (l -> head == NULL)
+        {
+            l -> head = n;
+            l -> tail = n;
         }
         else
         {
-            pList->tail = pItem->prev;
-            if(pItem->prev)
+            node_t * c = l -> head;
+            node_t * p = NULL;
+
+            while (c != NULL && c -> data < value)
             {
-                pItem->prev->next = NULL;
+                p = c;
+                c = c -> next;
             }
+
+            n -> next = c;
+            n -> prev = p;
+
+            if (p)
+                p -> next = n;
+            else if (!p)
+                l -> head = n;
+            else if (c)
+                c -> prev = n;
+            else if (!c)
+                l -> tail = n;
         }
-        free(pItem);
+        pthread_mutex_unlock(&l->lock);
     }
 
-    return err;
+    return ret;
 }
-
-// Traverse the list calling action for each item
-// Return zero on success
-// Params:
-//    list: list to traverse
-//    action: function to call with each data item
-int Traverse(linked_list_t list, void (*action)(int data))
-{
-	int err = 0;
-	if(list==NULL || action==NULL)
-	{
-		err = 1;
-	}
-	else
-	{
-    	list_t* pList = (list_t*)list;
-		item_t* pItem = pList->head;
-		while(pItem)
-		{
-			action(pItem->data);
-			pItem = pItem->next;
-		}
-	}
-	return err;
-}
-
-// Insert an item in sorted order of the list
-// List must be sorted when this is called
-// Params:
-//    list: list to insert into
-//    data: Data to be added to the list
-int Insert_In_Order(linked_list_t list, int data)
-{
-    int err = 0;
-   	list_t* pList = (list_t*)list;
-    if(pList==NULL)
-    {
-        err = 1;
-    }
-	else if(pList->count==0)
-	{
-		err = Insert_At_Beginning(list, data);
-	}
-    else
-    {
-		// Find location to insert data
-		item_t* p = pList->head;
-		while(p && data >= p->data)
-		{
-			p = p->next;
-		}
-		if(p == NULL) // If end of list, Insert_At_End
-		{
-			err = Insert_At_End(list, data);
-		}
-		else if(p == pList->head) // If head, call Insert_At_Beginning
-		{
-			err = Insert_At_Beginning(list, data);
-		}
-		else // Otherwise, insert before p
-		{
-			item_t* n = (item_t*)malloc(sizeof(item_t));
-			n->data = data;
-			n->next = p;
-			n->prev = p->prev;
-			p->prev = n;
-			n->prev->next = n;
-		}
-	}
-	return err;
-}
-

@@ -1,4 +1,7 @@
 #pragma once
+
+#include <pthread.h>
+
 //*************************************************
 // linked list definition
 //

@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
-#include <pthread.h>
 
 #include "list.h"
 #include "sequence.h"
@@ -64,9 +63,9 @@ void * thread(void * data)
     int d = 0;
     for (short ii = 0; ii < val; ii++)
     {
-//        pthread_mutex_lock(&lock);
+        pthread_mutex_lock(&lock);
         d = Next_In_Sequence();
- //       pthread_mutex_unlock(&lock);
+        pthread_mutex_unlock(&lock);
         Insert_In_Order(list, d);
     }
 
@@ -119,6 +118,8 @@ int main(int argc, char** argv)
     {
         pthread_join(threads[ii], NULL);
     }
+
+    free(threads);
 
     printf("Next expected: %i\n", num_to_insert * num_threads + 1);
 
