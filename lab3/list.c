@@ -76,7 +76,7 @@ int Delete_List(linked_list_t list)
         node_t * curr = l -> head;
         node_t * prev = NULL; 
 
-        while (curr != l -> tail)
+        while (curr != NULL)
         {
             prev = curr;
             curr = curr -> next;
