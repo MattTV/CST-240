@@ -10,16 +10,14 @@ int main()
     const short SIZE = 100;
 
     char in[SIZE];
-    char cwd[SIZE];
     short quit = 0;
 
-    
+    :
 
     while (!quit)
     {
         // Print a prompt, clear the input buffer, and take input.
-        getcwd(cwd, SIZE);
-        printf("\n%s$ ", cwd);
+        printf("\n%s$ ", path);
         memset(&in, '\0', 100);
         fgets(in, SIZE, stdin);
 
@@ -55,26 +53,9 @@ int main()
         // Set the last argument as NULL.
         args[ii] = NULL;
 
-        // Look for one of the three internal commands.
-        if (strcmp(args[0], "exit") == 0)
-        {
-            // Set a flag to avoid looping again and print a nice message.
-            quit = 1;
-            printf("Thank you for using MTVShell! Make an amazing day for yourself!\n");
-        }
-        else if (strcmp(args[0], "pwd") == 0)
-        {
-            // Get and print the current working directory.
-            getcwd(cwd, SIZE);
-            printf("%s\n", cwd);
-        }
-        else if (strcmp(args[0], "cd") == 0)
-        {
-            // Change the current working directory.
-            chdir(args[1]);
-        }
-        // Or, if none of those commands were given, execute the given command as a child process.
-        else
+        // Look for an exit command.
+        // If the command is not exit,
+        if (strcmp(args[0], "exit"))
         {
             // Create a new process.
             pid_t a_pid = fork();
@@ -88,8 +69,6 @@ int main()
                     perror("Cannot execute");
                     exit(1);
                 }
-
-                exit(0);
             }
           
             // The parent process...
@@ -97,6 +76,9 @@ int main()
             {
                 // Wait for the child to finish executing so the loop can run again.
                 wait(&ii);
+
+                // Free the arguments array.
+                free(args);
             }
            
             // If there was an error creating a new process, say so.
@@ -104,10 +86,19 @@ int main()
             {
                 printf("Creating a new process to run the command failed.\n");
                 
+                // Free the arguments array.
+                free(args);
             }
         }
-        // Free the arguments array.
-        free(args);
+        // If the command is exit, print a nice message and set a flag to exit the loop.
+        else
+        {
+            quit = 1;
+            printf("Thank you for using MTVShell! Make an amazing day for yourself!\n");
+
+            // Free the arguments array.
+            free(args);
+        }
     }
 
     return 0;
