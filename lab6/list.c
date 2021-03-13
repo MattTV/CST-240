@@ -22,6 +22,7 @@ typedef struct list_s
     item_t* head;
     item_t* tail;
     int     count;
+    pthreat_mutex_t lock;
 } list_t;
 
 void Fatal_Error(const char* msg) {
@@ -40,6 +41,7 @@ linked_list_t Init_List()
     pList->count = 0;
     pList->head = NULL;
     pList->tail = NULL;
+    pthread_mutex_init(&(pList->lock));
     return (linked_list_t)pList;
 }
 

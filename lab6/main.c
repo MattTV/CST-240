@@ -64,9 +64,9 @@ void * thread(void * data)
     int d = 0;
     for (short ii = 0; ii < val; ii++)
     {
-        pthread_mutex_lock(&lock);
+//        pthread_mutex_lock(&lock);
         d = Next_In_Sequence();
-        pthread_mutex_unlock(&lock);
+ //       pthread_mutex_unlock(&lock);
         Insert_In_Order(list, d);
     }
 
@@ -134,5 +134,6 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
 
 
