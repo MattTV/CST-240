@@ -1,4 +1,4 @@
-#include <string.h>
+#include "common.h"
 
 void fatal_error(const char * msg)
 {
@@ -13,7 +13,7 @@ void WriteString(int fd, char * buffer)
     if (write(fd, &net_len, sizeof(short)) < 0)
         fatal_error("Failed to write buffer length.");
     if (write(fd, buffer, sizeof(char) * len) < 0)
-        fatal-error("Failed to write buffer data.");
+        fatal_error("Failed to write buffer data.");
 }
 
 void ReadString(int fd, char * buffer)

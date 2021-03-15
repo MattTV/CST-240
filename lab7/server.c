@@ -1,10 +1,11 @@
+#include "common.h"
+
 int main(int argc, char * argv[])
 {
     if (argc < 2)
         fatal_error("No port number supplied.\n");
 
     int opt;
-    int ii;
     int port = 0;
 
     while ((opt = getopt(argc, argv, "p:")) != -1)
@@ -49,13 +50,13 @@ int main(int argc, char * argv[])
     // Accept any and all clients, because this is CSET, not Cybersecurity.
     struct sockaddr_in cli_addr;
     socklen_t clilen = sizeof(cli_addr);
-    int clifd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+    int clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
     
     // Begin communicating.
     char buffer[256];
     bzero(buffer, 256);
 
-    ReadString(sockfd, buffer);
+    ReadString(clientfd, buffer);
     printf("%s\n", buffer);
 
     WriteString(clientfd, "Sup cuntface");

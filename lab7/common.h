@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <ctype.h>
+#include <errno.h>
+#include <getopt.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
