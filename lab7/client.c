@@ -56,7 +56,7 @@ int main(int argc, char * argv[])
 
     while (in != '.')
     {
-        // Start communicating.
+        // Prompt the user for input and write it to the server.
         char outbuffer[256];
         bzero(outbuffer, 256);
         printf("Please enter an equation, such as 1+1 or 20%%2, or enter a period to exit.\n");
@@ -64,6 +64,7 @@ int main(int argc, char * argv[])
         in = outbuffer[0];
         WriteString(sockfd, outbuffer);
 
+        // If the character read is not a '.', proceed as normal.
         if (in != '.')
         {
             // Wait for the server to respond.
@@ -71,15 +72,16 @@ int main(int argc, char * argv[])
             bzero(inbuffer, 256);
             ReadString(sockfd, inbuffer);
 
+            // Tell the user the result.
             printf("The result is %s\n", inbuffer);
         }
     }
 
+    // If the program is here, the user has entered a '.'. Give a goodbye message.
     printf("Thank you for using the threaded network calculator! Goodbye!\n");
 
     // Close the socket.
     close(sockfd);
-
 
     return 0;
 }
