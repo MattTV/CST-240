@@ -60,51 +60,20 @@ int main(int argc, char * argv[])
 
 
     // Testing
-    int clientfd = -1;
+//  int clientfd = -1;
     pthread_t tid;
-    while (1)
-    {
-        while (clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen))
-        {
-            if (pthread_create(&tid, NULL, user, (void *)&clientfd) < 0)
-                fatal_error("Failed to create thread.");
+    //while (1)
+    //{
+    //    while (clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen))
+     //   {
+            //if (pthread_create(&tid, NULL, user, (void *)clientfd) < 0)
+             //   fatal_error("Failed to create thread.");
 
-    //int clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
-    //pthread_create(&tid, NULL, user, (void *)&clientfd);
-        }
-        
-            pthread_join(tid, (void *)&clientfd);
-    }
-
-
-    /*
-    pthread_t tids[3];
-    int i = 0;
-    int clientfd = -1;
-    struct sockaddr_in cli_addr;
-
-    while (1)
-    {
-    socklen_t clilen = sizeof(cli_addr);
-    clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
-        
-            if (pthread_create(&tids[i++], NULL, user, (void *)&clientfd) < 0)
-                fatal_error("Failed to create thread.");
-
-    //int clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
-    //pthread_create(&tid, NULL, user, (void *)&clientfd);
-        }
-        
-            if (i >= 3)
-            {
-                i = 0;
-                while (i < 3)
-                {
-            pthread_join(tids[i++], (void *)&clientfd);
-                }
-                i = 0;
-            }
-    //}*/
+    int clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+    pthread_create(&tid, NULL, user, (void *)&clientfd);
+    pthread_join(tid, (void *)&clientfd);
+      //  }
+      //  }
 
     // Close the socket.
     close(sockfd);
@@ -128,7 +97,7 @@ void * user(void * param)
         short found = 0;
         while (found == 0 && inbuffer[ii] != '\0')
         {
-            if (inbuffer[ii] == '+' || inbuffer[ii] == '-' || inbuffer[ii] == '*' || inbuffer[ii] == '/' || inbuffer[ii] == '%' || inbuffer[ii] == '.')
+            if (inbuffer[ii] == '+' || inbuffer[ii] == '-' || inbuffer[ii] == '*' || inbuffer[ii] == '/' || inbuffer[ii] == '%')
             {
                 op = inbuffer[ii];
                 found = 1;

@@ -52,17 +52,32 @@ int main(int argc, char * argv[])
     if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
         fatal_error("Error connecting to host.");
 
-    // Start communicating.
-    WriteString(sockfd, "Sup dumbass bitch.");
+    char in = '\0';
 
-    // Wait for the server to respond.
-    char buffer[255];
-    ReadString(sockfd, buffer);
+    while (in != '.')
+    {
+        // Start communicating.
+        char outbuffer[256];
+        bzero(outbuffer, 256);
+        printf("Please enter an equation, such as 1+1 or 20%%2, or enter a period to exit.\n");
+        fgets(outbuffer, 256, stdin);
+        in = outbuffer[0];
+        WriteString(sockfd, outbuffer);
 
-    printf("%s\n", buffer);
+        if (in != '.')
+        {
+            // Wait for the server to respond.
+            char inbuffer[256];
+            bzero(inbuffer, 256);
+            ReadString(sockfd, inbuffer);
+
+            printf("The result is %s\n", inbuffer);
+        }
+    }
+
+    printf("Thank you for using the threaded network calculator! Goodbye!\n");
 
     // Close the socket.
-    close(sockfd);
     close(sockfd);
 
 
