@@ -60,20 +60,28 @@ int main(int argc, char * argv[])
 
     // Begin communicating.
     int clientfd = -1;
-    pthread_t tid;
-    while (1)
-    {
+    pthread_t tid[3];
+    //while (1)
+    //{
+        short jj = 0;
+
         // Accept a connection on a client file desciptor.
-        while (clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen))
+        while (jj < 3)
         {
+            clientfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
             // Create a thread.
-            if (pthread_create(&tid, NULL, user, (void *)&clientfd) < 0)
+            if (pthread_create(&tid[jj], NULL, user, (void *)&clientfd) < 0)
                 fatal_error("Failed to create thread.");
+
+            ++jj;
         }
 
         // Join a thread. Only one because I don't understand how to do more and it doesn't work and it makes my emotions hurt :(
-        pthread_join(tid, (void *)&clientfd);
-    }
+        for (short kk = 0; kk < 3; ++kk)
+        {
+            pthread_join(tid[kk], (void *)&clientfd);
+        }
+    //}
 
 
     // Close the socket's file descriptor.
